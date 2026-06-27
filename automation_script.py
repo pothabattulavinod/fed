@@ -1,28 +1,29 @@
 #!/usr/bin/env python3
 import time
 import random
+import gc
 from playwright.sync_api import sync_playwright
 
-# --- CONFIGURATION (OPTIMIZED FOR GITHUB ACTIONS) ---
+# --- CONFIGURATION (UPDATED TO 100 CLICKS) ---
 TARGET_URL = "https://yott.netlify.app/"
-CLICK_COUNT = 15         
+CLICK_COUNT = 100        # Changed to 100 clicks per execution run
 MIN_WAIT = 2             
 MAX_WAIT = 5             
-HEADLESS_MODE = True    # MUST BE TRUE FOR GITHUB ACTIONS RUNNERS
-# ---------------------------------------------------
+HEADLESS_MODE = True    # Kept True for seamless execution on GitHub Actions
+# ---------------------------------------------
 
 def run_automation():
     print(f"[*] Starting browser automation targeting: {TARGET_URL}")
+    print(f"[*] Total target interactions for this job: {CLICK_COUNT}")
     
     with sync_playwright() as p:
-        # Launching with specific arguments required for container/headless stability
         browser = p.chromium.launch(
             headless=HEADLESS_MODE,
             args=[
                 "--disable-blink-features=AutomationControlled",
                 "--no-sandbox",
                 "--disable-setuid-sandbox",
-                "--disable-dev-shm-usage" # Prevents memory exhaustion crashes in Linux runners
+                "--disable-dev-shm-usage"
             ]
         )
         
@@ -77,8 +78,13 @@ def run_automation():
                 except Exception:
                     continue
                 
+                # Dynamic human-like pace
                 sleep_duration = random.uniform(MIN_WAIT, MAX_WAIT)
                 time.sleep(sleep_duration)
+
+                # Periodic cleanup to protect the cloud runner's memory over 100 cycles
+                if i % 20 == 0:
+                    gc.collect()
                 
         except Exception as e:
             print(f"[-] Runtime interrupted: {e}")
