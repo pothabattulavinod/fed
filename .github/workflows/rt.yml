@@ -1,0 +1,15 @@
+name: Test RTSP
+
+on:
+  workflow_dispatch:
+
+jobs:
+  stream:
+    runs-on: self-hosted
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Test stream
+        run: |
+          ffplay -rtsp_transport tcp rtsp://192.168.0.143/live/ch00_0
